@@ -1,0 +1,362 @@
+{% extends "base.html" %}
+
+{% block title %}Device Map - Network Monitor{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+<style>
+#map {
+    height: 600px;
+    width: 100%;
+    border-radius: 0.5rem;
+}
+
+.device-popup {
+    min-width: 250px;
+}
+
+.device-popup .device-name {
+    font-weight: bold;
+    color: #2c3e50;
+    margin-bottom: 5px;
+}
+
+.device-popup .device-info {
+    font-size: 0.9rem;
+    margin-bottom: 3px;
+}
+
+.device-popup .status-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.8rem;
+    font-weight: bold;
+}
+
+.map-controls {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.legend {
+    background: white;
+    padding: 10px;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    margin-top: 10px;
+}
+
+.legend-item {
+    display: flex;
+    align-items: center;
+    margin-bottom: 5px;
+}
+
+.legend-color {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    margin-right: 8px;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+        <h1><i class="bi bi-geo-alt"></i> Device Geographic Map</h1>
+        <p class="text-muted">Interactive map showing device locations worldwide</p>
+    </div>
+    <div class="btn-group" role="group">
+        <a href="{% url 'devices:list' %}" class="btn btn-outline-secondary">
+            <i class="bi bi-list"></i> List View
+        </a>
+        <button class="btn btn-primary" onclick="refreshMap()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Map Statistics -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-primary">{{ total_devices }}</h5>
+                <small class="text-muted">Total Devices</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-success">{{ devices_with_location }}</h5>
+                <small class="text-muted">Geolocated</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-info">{{ unique_countries }}</h5>
+                <small class="text-muted">Countries</small>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+            <div class="card-body">
+                <h5 class="text-warning">{{ unique_isps }}</h5>
+                <small class="text-muted">ISPs</small>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Map Container -->
+<div class="card">
+    <div class="card-body p-0 position-relative">
+        <div class="map-controls">
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="clusterMarkers" checked>
+                <label class="form-check-label" for="clusterMarkers">
+                    Cluster Markers
+                </label>
+            </div>
+            <div class="form-check form-switch">
+                <input class="form-check-input" type="checkbox" id="showOffline">
+                <label class="form-check-label" for="showOffline">
+                    Show Offline
+                </label>
+            </div>
+        </div>
+        
+        <div id="map"></div>
+        
+        <div class="legend">
+            <h6>Device Status</h6>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #28a745;"></div>
+                <span>Online</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #dc3545;"></div>
+                <span>Offline</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #ffc107;"></div>
+                <span>Warning</span>
+            </div>
+            <div class="legend-item">
+                <div class="legend-color" style="background-color: #6c757d;"></div>
+                <span>Unknown</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Support the Project -->
+<div class="card mt-4 border-warning">
+    <div class="card-header bg-warning text-dark">
+        <h5 class="mb-0"><i class="bi bi-heart"></i> Support This Open Source Project</h5>
+    </div>
+    <div class="card-body">
+        <p class="mb-3">This network monitoring tool is completely free and open source. If you find it useful, please consider supporting its development:</p>
+        <div class="row">
+            <div class="col-md-6">
+                <a href="https://github.com/vallururavi27/Multi-Network-Devices-Monitoring" class="btn btn-dark btn-sm me-2" target="_blank">
+                    <i class="bi bi-github"></i> Star on GitHub
+                </a>
+                <a href="https://paypal.me/vallururavi27" class="btn btn-primary btn-sm" target="_blank">
+                    <i class="bi bi-paypal"></i> Donate via PayPal
+                </a>
+            </div>
+            <div class="col-md-6 text-end">
+                <small class="text-muted">Your support helps maintain and improve this tool for everyone!</small>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.markercluster@1.4.1/dist/leaflet.markercluster.js"></script>
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.css" />
+<link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.4.1/dist/MarkerCluster.Default.css" />
+
+<script>
+let map;
+let markersLayer;
+let clusterGroup;
+
+// Device data from Django
+const devices = {{ devices_json|safe }};
+
+// Status colors
+const statusColors = {
+    'online': '#28a745',
+    'offline': '#dc3545',
+    'warning': '#ffc107',
+    'unknown': '#6c757d'
+};
+
+function initMap() {
+    // Initialize map
+    map = L.map('map').setView([20, 0], 2);
+    
+    // Add tile layer
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: '© OpenStreetMap contributors'
+    }).addTo(map);
+    
+    // Initialize marker cluster group
+    clusterGroup = L.markerClusterGroup({
+        chunkedLoading: true,
+        maxClusterRadius: 50
+    });
+    
+    // Add markers
+    addDeviceMarkers();
+    
+    // Add cluster group to map
+    map.addLayer(clusterGroup);
+}
+
+function addDeviceMarkers() {
+    devices.forEach(device => {
+        if (device.latitude && device.longitude) {
+            const marker = createDeviceMarker(device);
+            clusterGroup.addLayer(marker);
+        }
+    });
+}
+
+function createDeviceMarker(device) {
+    const color = statusColors[device.status] || statusColors.unknown;
+    
+    // Create custom icon
+    const icon = L.divIcon({
+        className: 'custom-marker',
+        html: `<div style="background-color: ${color}; width: 12px; height: 12px; border-radius: 50%; border: 2px solid white; box-shadow: 0 2px 4px rgba(0,0,0,0.3);"></div>`,
+        iconSize: [16, 16],
+        iconAnchor: [8, 8]
+    });
+    
+    const marker = L.marker([device.latitude, device.longitude], { icon: icon });
+    
+    // Create popup content
+    const popupContent = `
+        <div class="device-popup">
+            <div class="device-name">${device.name}</div>
+            <div class="device-info"><strong>IP:</strong> ${device.ip_address}</div>
+            <div class="device-info"><strong>Location:</strong> ${device.location || 'Unknown'}</div>
+            <div class="device-info"><strong>ISP:</strong> ${device.isp || 'Unknown'}</div>
+            <div class="device-info"><strong>Country:</strong> ${device.country || 'Unknown'}</div>
+            <div class="device-info">
+                <strong>Status:</strong> 
+                <span class="status-badge" style="background-color: ${color}; color: white;">
+                    ${device.status.toUpperCase()}
+                </span>
+            </div>
+            <div class="device-info"><strong>Last Seen:</strong> ${device.last_seen || 'Never'}</div>
+            <div class="mt-2">
+                <a href="/devices/${device.id}/" class="btn btn-sm btn-primary">View Details</a>
+                <button class="btn btn-sm btn-outline-success" onclick="pingDevice(${device.id})">Ping</button>
+            </div>
+        </div>
+    `;
+    
+    marker.bindPopup(popupContent);
+    
+    return marker;
+}
+
+function refreshMap() {
+    // Clear existing markers
+    clusterGroup.clearLayers();
+    
+    // Reload device data
+    fetch('/api/devices/map/')
+        .then(response => response.json())
+        .then(data => {
+            devices.length = 0;
+            devices.push(...data.devices);
+            addDeviceMarkers();
+        })
+        .catch(error => {
+            console.error('Error refreshing map:', error);
+            showToast('Error refreshing map data', 'error');
+        });
+}
+
+function pingDevice(deviceId) {
+    fetch(`/api/device/${deviceId}/ping/`, { method: 'POST' })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                showToast(`Ping successful: ${data.response_time}ms`, 'success');
+            } else {
+                showToast(`Ping failed: ${data.error}`, 'error');
+            }
+        })
+        .catch(error => {
+            showToast('Error pinging device', 'error');
+        });
+}
+
+function showToast(message, type) {
+    // Simple toast notification
+    const toast = document.createElement('div');
+    toast.className = `alert alert-${type === 'success' ? 'success' : 'danger'} position-fixed`;
+    toast.style.cssText = 'top: 20px; right: 20px; z-index: 9999; min-width: 300px;';
+    toast.innerHTML = `
+        ${message}
+        <button type="button" class="btn-close" onclick="this.parentElement.remove()"></button>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+        if (toast.parentElement) {
+            toast.remove();
+        }
+    }, 5000);
+}
+
+// Event listeners
+document.getElementById('clusterMarkers').addEventListener('change', function() {
+    if (this.checked) {
+        map.addLayer(clusterGroup);
+    } else {
+        map.removeLayer(clusterGroup);
+        clusterGroup.eachLayer(layer => {
+            map.addLayer(layer);
+        });
+    }
+});
+
+document.getElementById('showOffline').addEventListener('change', function() {
+    // Filter markers based on status
+    clusterGroup.clearLayers();
+    
+    devices.forEach(device => {
+        if (device.latitude && device.longitude) {
+            if (this.checked || device.status !== 'offline') {
+                const marker = createDeviceMarker(device);
+                clusterGroup.addLayer(marker);
+            }
+        }
+    });
+});
+
+// Initialize map when page loads
+document.addEventListener('DOMContentLoaded', initMap);
+</script>
+{% endblock %}

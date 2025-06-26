@@ -1,6 +1,23 @@
-# Network Monitor
+# 🌐 Multi-Network Devices Monitoring System
 
-A professional, production-ready network monitoring solution built with Flask. Monitor multiple IP addresses, servers, and network devices with real-time ping tests, speed tests, automated alerts, and comprehensive reporting.
+A comprehensive, enterprise-grade network monitoring solution built with Django that supports monitoring 1000+ devices with real-time status tracking, advanced filtering, and comprehensive service monitoring.
+
+![Network Monitor Dashboard](https://img.shields.io/badge/Django-5.2.3-green) ![Python](https://img.shields.io/badge/Python-3.8+-blue) ![License](https://img.shields.io/badge/License-MIT-yellow) ![Open Source](https://img.shields.io/badge/Open%20Source-❤️-red)
+
+## 💝 Support This Project
+
+This project is **completely free and open source**. If you find it useful, please consider supporting its development:
+
+[![GitHub Stars](https://img.shields.io/github/stars/vallururavi27/Multi-Network-Devices-Monitoring?style=social)](https://github.com/vallururavi27/Multi-Network-Devices-Monitoring)
+[![PayPal Donate](https://img.shields.io/badge/PayPal-Donate-blue?logo=paypal)](https://paypal.me/vallururavi27)
+
+- ⭐ **Star this repository** on GitHub
+- 💰 **[Donate via PayPal](https://paypal.me/vallururavi27)** to support development
+- 🐛 **Report bugs** and suggest features
+- 🤝 **Contribute** code improvements
+- 📢 **Share** with others who might find it useful
+
+Your support helps maintain and improve this tool for everyone! 🙏
 
 ## ✨ Features
 

@@ -447,6 +447,77 @@ def setup_device_monitoring(device, monitoring_ports, monitoring_options):
         pass
 
 
+def device_map(request):
+    """Geographic map view of devices"""
+    import json
+    from django.db.models import Count
+
+    # Get all devices with geolocation data
+    devices = Device.objects.filter(is_active=True).exclude(
+        models.Q(latitude__isnull=True) | models.Q(longitude__isnull=True)
+    )
+
+    # Prepare device data for JavaScript
+    devices_data = []
+    for device in devices:
+        devices_data.append({
+            'id': device.id,
+            'name': device.name,
+            'ip_address': device.ip_address,
+            'latitude': float(device.latitude) if device.latitude else None,
+            'longitude': float(device.longitude) if device.longitude else None,
+            'status': device.status,
+            'location': device.location,
+            'isp': device.isp,
+            'country': device.country,
+            'last_seen': device.last_seen.strftime('%Y-%m-%d %H:%M') if device.last_seen else None,
+        })
+
+    # Calculate statistics
+    total_devices = Device.objects.filter(is_active=True).count()
+    devices_with_location = devices.count()
+    unique_countries = Device.objects.filter(is_active=True).exclude(country__isnull=True).values('country').distinct().count()
+    unique_isps = Device.objects.filter(is_active=True).exclude(isp__isnull=True).values('isp').distinct().count()
+
+    context = {
+        'devices_json': json.dumps(devices_data),
+        'total_devices': total_devices,
+        'devices_with_location': devices_with_location,
+        'unique_countries': unique_countries,
+        'unique_isps': unique_isps,
+    }
+
+    return render(request, 'devices/map.html', context)
+
+
+def device_map_api(request):
+    """API endpoint for map data"""
+    from django.http import JsonResponse
+
+    # Get all devices with geolocation data
+    devices = Device.objects.filter(is_active=True).exclude(
+        models.Q(latitude__isnull=True) | models.Q(longitude__isnull=True)
+    )
+
+    # Prepare device data for JavaScript
+    devices_data = []
+    for device in devices:
+        devices_data.append({
+            'id': device.id,
+            'name': device.name,
+            'ip_address': device.ip_address,
+            'latitude': float(device.latitude) if device.latitude else None,
+            'longitude': float(device.longitude) if device.longitude else None,
+            'status': device.status,
+            'location': device.location,
+            'isp': device.isp,
+            'country': device.country,
+            'last_seen': device.last_seen.strftime('%Y-%m-%d %H:%M') if device.last_seen else None,
+        })
+
+    return JsonResponse({'devices': devices_data})
+
+
 def device_export(request):
     """Export devices to Excel"""
     # TODO: Implement Excel export

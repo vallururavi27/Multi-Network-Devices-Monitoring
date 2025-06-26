@@ -57,6 +57,10 @@ class Device(models.Model):
     isp = models.CharField(max_length=200, blank=True, help_text="Internet Service Provider")
     organization = models.CharField(max_length=200, blank=True, help_text="Organization")
 
+    # Geographic Coordinates
+    latitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True, help_text="Latitude coordinate")
+    longitude = models.DecimalField(max_digits=10, decimal_places=7, null=True, blank=True, help_text="Longitude coordinate")
+
     # Network Performance Metrics
     current_latency = models.FloatField(null=True, blank=True, help_text="Current latency in ms")
     current_upload_speed = models.FloatField(null=True, blank=True, help_text="Current upload speed in Mbps")
