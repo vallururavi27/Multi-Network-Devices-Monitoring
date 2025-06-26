@@ -1,0 +1,103 @@
+{% extends "base_simple.html" %}
+
+{% block title %}Devices - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-hdd-network"></i> Devices</h1>
+    <a href="/add_device" class="btn btn-primary">
+        <i class="bi bi-plus-circle"></i> Add Device
+    </a>
+</div>
+
+{% if devices %}
+    <div class="card">
+        <div class="card-body">
+            <div class="table-responsive">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>IP Address</th>
+                            <th>Type</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                            <th>Last Seen</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for device in devices %}
+                        <tr>
+                            <td>
+                                <strong>{{ device.name }}</strong>
+                                {% if device.description %}
+                                    <br><small class="text-muted">{{ device.description }}</small>
+                                {% endif %}
+                            </td>
+                            <td><code>{{ device.ip_address }}</code></td>
+                            <td>{{ device.device_type or 'Unknown' }}</td>
+                            <td>{{ device.location or '-' }}</td>
+                            <td>
+                                <span class="status-{{ device.status.value if device.status else 'unknown' }}">
+                                    <i class="bi bi-circle-fill"></i>
+                                    {{ device.status.value.title() if device.status else 'Unknown' }}
+                                </span>
+                            </td>
+                            <td>
+                                {% if device.last_seen %}
+                                    {{ device.last_seen.strftime('%Y-%m-%d %H:%M') }}
+                                {% else %}
+                                    Never
+                                {% endif %}
+                            </td>
+                            <td>
+                                <button class="btn btn-sm btn-outline-primary" onclick="testDevice({{ device.id }})">
+                                    <i class="bi bi-play-circle"></i> Test
+                                </button>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <i class="bi bi-hdd-network display-1 text-muted"></i>
+            <h3 class="mt-3">No Devices Configured</h3>
+            <p class="text-muted">Add your first device to start monitoring your network.</p>
+            <a href="/add_device" class="btn btn-primary btn-lg">
+                <i class="bi bi-plus-circle"></i> Add Your First Device
+            </a>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testDevice(deviceId) {
+    fetch(`/test_device/${deviceId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const status = data.is_reachable ? 'Online' : 'Offline';
+                const responseTime = data.response_time ? ` (${data.response_time.toFixed(1)}ms)` : '';
+                alert(`${data.device_name}: ${status}${responseTime}`);
+                
+                // Refresh page to show updated status
+                setTimeout(() => location.reload(), 1000);
+            } else {
+                alert(`Test failed: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error testing device');
+        });
+}
+</script>
+{% endblock %}

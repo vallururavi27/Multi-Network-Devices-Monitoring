@@ -1,0 +1,560 @@
+{% extends "base.html" %}
+
+{% block title %}Import Devices - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h4><i class="bi bi-upload"></i> Import Network Devices</h4>
+    <a href="{% url 'devices:list' %}" class="btn btn-secondary">
+        <i class="bi bi-arrow-left"></i> Back to Devices
+    </a>
+</div>
+
+<div class="row">
+    <!-- Import Form -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-spreadsheet"></i> Upload Device List</h6>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" id="importForm">
+                    {% csrf_token %}
+                    
+                    <!-- File Upload -->
+                    <div class="mb-4">
+                        <label class="form-label">Select File</label>
+                        <input type="file" class="form-control" name="file" id="fileInput" 
+                               accept=".xlsx,.xls,.csv,.txt" required>
+                        <div class="form-text">
+                            Supported formats: Excel (.xlsx, .xls), CSV (.csv), Text (.txt)
+                            <br>Maximum file size: 10MB
+                        </div>
+                    </div>
+
+                    <!-- Import Options -->
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="has_header" id="hasHeader" checked>
+                                <label class="form-check-label" for="hasHeader">
+                                    File has header row
+                                </label>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="update_existing" id="updateExisting">
+                                <label class="form-check-label" for="updateExisting">
+                                    Update existing devices
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Smart Column Detection -->
+                    <div class="mb-4">
+                        <h6><i class="bi bi-magic"></i> Smart Column Detection</h6>
+                        <div class="alert alert-info">
+                            <strong>Your Format Detected:</strong> IP Address | Host Name | Location | ISP
+                            <br><small>The system will automatically map columns based on your data format.</small>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">IP Address Column</label>
+                                    <select class="form-select" name="ip_column" required>
+                                        <option value="0" selected>Column 1 (IP Address)</option>
+                                        <option value="1">Column 2 (Host Name)</option>
+                                        <option value="2">Column 3 (Location)</option>
+                                        <option value="3">Column 4 (ISP)</option>
+                                        <option value="4">Column 5</option>
+                                        <option value="5">Column 6</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Host Name Column</label>
+                                    <select class="form-select" name="name_column">
+                                        <option value="0">Column 1 (IP Address)</option>
+                                        <option value="1" selected>Column 2 (Host Name)</option>
+                                        <option value="2">Column 3 (Location)</option>
+                                        <option value="3">Column 4 (ISP)</option>
+                                        <option value="4">Column 5</option>
+                                        <option value="5">Column 6</option>
+                                        <option value="">Auto-generate from IP</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">Location Column</label>
+                                    <select class="form-select" name="location_column">
+                                        <option value="0">Column 1 (IP Address)</option>
+                                        <option value="1">Column 2 (Host Name)</option>
+                                        <option value="2" selected>Column 3 (Location)</option>
+                                        <option value="3">Column 4 (ISP)</option>
+                                        <option value="4">Column 5</option>
+                                        <option value="5">Column 6</option>
+                                        <option value="">Skip</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-3">
+                                <div class="mb-3">
+                                    <label class="form-label">ISP Column</label>
+                                    <select class="form-select" name="isp_column">
+                                        <option value="0">Column 1 (IP Address)</option>
+                                        <option value="1">Column 2 (Host Name)</option>
+                                        <option value="2">Column 3 (Location)</option>
+                                        <option value="3" selected>Column 4 (ISP)</option>
+                                        <option value="4">Column 5</option>
+                                        <option value="5">Column 6</option>
+                                        <option value="">Skip</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Default Device Type</label>
+                                    <select class="form-select" name="default_device_type">
+                                        <option value="server" selected>Server</option>
+                                        <option value="router">Router</option>
+                                        <option value="switch">Switch</option>
+                                        <option value="dns_server">DNS Server</option>
+                                        <option value="firewall">Firewall</option>
+                                        <option value="workstation">Workstation</option>
+                                        <option value="database">Database Server</option>
+                                        <option value="web_server">Web Server</option>
+                                        <option value="ftp_server">FTP Server</option>
+                                        <option value="other">Other</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="mb-3">
+                                    <label class="form-label">Auto-detect Device Type</label>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" name="auto_detect_type" id="autoDetectType" checked>
+                                        <label class="form-check-label" for="autoDetectType">
+                                            Detect type from hostname/IP patterns
+                                        </label>
+                                    </div>
+                                    <small class="text-muted">e.g., db*, sql*, web*, ftp*, dns*</small>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Comprehensive Monitoring Settings -->
+                    <div class="mb-4">
+                        <h6><i class="bi bi-activity"></i> Monitoring Configuration</h6>
+
+                        <!-- Basic Monitoring -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Basic Network Monitoring</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enable_ping" id="enablePing" checked>
+                                            <label class="form-check-label" for="enablePing">
+                                                <strong>Ping Monitoring</strong>
+                                                <br><small class="text-muted">ICMP ping tests for basic connectivity</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" name="enable_alerts" id="enableAlerts" checked>
+                                            <label class="form-check-label" for="enableAlerts">
+                                                <strong>Alert Notifications</strong>
+                                                <br><small class="text-muted">Email/SMS alerts for issues</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Service Monitoring -->
+                        <div class="card mb-3">
+                            <div class="card-header">
+                                <h6 class="mb-0">Service & Port Monitoring</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_http" id="enableHttp" checked>
+                                            <label class="form-check-label" for="enableHttp">
+                                                <strong>HTTP/HTTPS Monitoring</strong>
+                                                <br><small class="text-muted">Ports 80, 443, 8080, 8443</small>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_ftp" id="enableFtp">
+                                            <label class="form-check-label" for="enableFtp">
+                                                <strong>FTP Monitoring</strong>
+                                                <br><small class="text-muted">Ports 21, 22 (SFTP)</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_database" id="enableDatabase">
+                                            <label class="form-check-label" for="enableDatabase">
+                                                <strong>Database Monitoring</strong>
+                                                <br><small class="text-muted">MySQL(3306), PostgreSQL(5432), SQL Server(1433)</small>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_custom_ports" id="enableCustomPorts">
+                                            <label class="form-check-label" for="enableCustomPorts">
+                                                <strong>Custom Port Monitoring</strong>
+                                                <br><small class="text-muted">Specify custom ports below</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <!-- Custom Ports -->
+                                <div class="row mt-3" id="customPortsSection" style="display: none;">
+                                    <div class="col-12">
+                                        <label class="form-label">Custom Ports (comma-separated)</label>
+                                        <input type="text" class="form-control" name="custom_ports"
+                                               placeholder="e.g., 9090, 3000, 5000, 8888">
+                                        <div class="form-text">Enter port numbers separated by commas</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Advanced Monitoring -->
+                        <div class="card">
+                            <div class="card-header">
+                                <h6 class="mb-0">Advanced Monitoring</h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_snmp" id="enableSnmp">
+                                            <label class="form-check-label" for="enableSnmp">
+                                                <strong>SNMP Monitoring</strong>
+                                                <br><small class="text-muted">Network device statistics</small>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_speed_test" id="enableSpeedTest">
+                                            <label class="form-check-label" for="enableSpeedTest">
+                                                <strong>Speed Testing</strong>
+                                                <br><small class="text-muted">Bandwidth monitoring</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_ssl_check" id="enableSslCheck">
+                                            <label class="form-check-label" for="enableSslCheck">
+                                                <strong>SSL Certificate Check</strong>
+                                                <br><small class="text-muted">Certificate expiry monitoring</small>
+                                            </label>
+                                        </div>
+                                        <div class="form-check mb-2">
+                                            <input class="form-check-input" type="checkbox" name="enable_dns_check" id="enableDnsCheck">
+                                            <label class="form-check-label" for="enableDnsCheck">
+                                                <strong>DNS Resolution Check</strong>
+                                                <br><small class="text-muted">DNS response monitoring</small>
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Batch Processing -->
+                    <div class="mb-4">
+                        <h6>Batch Processing</h6>
+                        <div class="row">
+                            <div class="col-md-6">
+                                <label class="form-label">Batch Size</label>
+                                <select class="form-select" name="batch_size">
+                                    <option value="50">50 devices per batch</option>
+                                    <option value="100" selected>100 devices per batch</option>
+                                    <option value="200">200 devices per batch</option>
+                                    <option value="500">500 devices per batch</option>
+                                </select>
+                                <div class="form-text">Larger batches are faster but use more memory</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label">Processing Mode</label>
+                                <select class="form-select" name="processing_mode">
+                                    <option value="sync">Synchronous (wait for completion)</option>
+                                    <option value="async" selected>Asynchronous (background processing)</option>
+                                </select>
+                                <div class="form-text">Async recommended for large imports</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                        <button type="button" class="btn btn-outline-secondary" onclick="previewFile()">
+                            <i class="bi bi-eye"></i> Preview
+                        </button>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-upload"></i> Import Devices
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Help & Templates -->
+    <div class="col-md-4">
+        <!-- Quick Import -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning"></i> Quick Import</h6>
+            </div>
+            <div class="card-body">
+                <div class="mb-3">
+                    <label class="form-label">IP Range Import</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="ipRange" placeholder="192.168.1.1-100">
+                        <button class="btn btn-outline-primary" onclick="generateFromRange()">
+                            <i class="bi bi-plus"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Example: 192.168.1.1-254</div>
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label">Subnet Import</label>
+                    <div class="input-group">
+                        <input type="text" class="form-control" id="subnet" placeholder="192.168.1.0/24">
+                        <button class="btn btn-outline-success" onclick="scanSubnet()">
+                            <i class="bi bi-search"></i>
+                        </button>
+                    </div>
+                    <div class="form-text">Scan and import active IPs</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- File Templates -->
+        <div class="card mb-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-file-earmark-text"></i> File Templates</h6>
+            </div>
+            <div class="card-body">
+                <p class="small text-muted">Download sample templates to format your data correctly:</p>
+                
+                <div class="d-grid gap-2">
+                    <a href="/static/templates/devices_template.xlsx" class="btn btn-outline-success btn-sm">
+                        <i class="bi bi-download"></i> Excel Template
+                    </a>
+                    <a href="/static/templates/devices_template.csv" class="btn btn-outline-info btn-sm">
+                        <i class="bi bi-download"></i> CSV Template
+                    </a>
+                    <button class="btn btn-outline-warning btn-sm" onclick="generateSampleData()">
+                        <i class="bi bi-file-earmark"></i> Generate Sample
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Import History -->
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Recent Imports</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-0 py-2">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small><strong>servers.xlsx</strong></small>
+                                <br><small class="text-muted">250 devices • 2 hours ago</small>
+                            </div>
+                            <span class="badge bg-success">Success</span>
+                        </div>
+                    </div>
+                    <div class="list-group-item px-0 py-2">
+                        <div class="d-flex justify-content-between">
+                            <div>
+                                <small><strong>network_devices.csv</strong></small>
+                                <br><small class="text-muted">150 devices • 1 day ago</small>
+                            </div>
+                            <span class="badge bg-warning">Partial</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Preview Modal -->
+<div class="modal fade" id="previewModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">File Preview</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="previewContent">
+                    <div class="text-center">
+                        <div class="spinner-border" role="status">
+                            <span class="visually-hidden">Loading...</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="proceedWithImport()">
+                    Proceed with Import
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function previewFile() {
+    const fileInput = document.getElementById('fileInput');
+    if (!fileInput.files[0]) {
+        alert('Please select a file first');
+        return;
+    }
+    
+    const modal = new bootstrap.Modal(document.getElementById('previewModal'));
+    modal.show();
+    
+    // Simulate file preview
+    setTimeout(() => {
+        document.getElementById('previewContent').innerHTML = `
+            <div class="table-responsive">
+                <table class="table table-sm">
+                    <thead>
+                        <tr>
+                            <th>IP Address</th>
+                            <th>Device Name</th>
+                            <th>Location</th>
+                            <th>Status</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>192.168.1.1</td>
+                            <td>Router-Main</td>
+                            <td>Server Room</td>
+                            <td><span class="badge bg-success">Valid</span></td>
+                        </tr>
+                        <tr>
+                            <td>192.168.1.100</td>
+                            <td>Server-01</td>
+                            <td>Data Center</td>
+                            <td><span class="badge bg-success">Valid</span></td>
+                        </tr>
+                        <tr>
+                            <td>invalid-ip</td>
+                            <td>Bad-Device</td>
+                            <td>Unknown</td>
+                            <td><span class="badge bg-danger">Invalid IP</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            <div class="alert alert-info">
+                <strong>Preview Summary:</strong>
+                <ul class="mb-0">
+                    <li>Total rows: 1,250</li>
+                    <li>Valid devices: 1,247</li>
+                    <li>Invalid entries: 3</li>
+                    <li>Duplicates: 2</li>
+                </ul>
+            </div>
+        `;
+    }, 1000);
+}
+
+function generateFromRange() {
+    const range = document.getElementById('ipRange').value;
+    if (!range) {
+        alert('Please enter an IP range');
+        return;
+    }
+    
+    // Generate devices from IP range
+    alert(`Generating devices from range: ${range}`);
+}
+
+function scanSubnet() {
+    const subnet = document.getElementById('subnet').value;
+    if (!subnet) {
+        alert('Please enter a subnet');
+        return;
+    }
+    
+    // Start subnet scan
+    alert(`Starting subnet scan: ${subnet}`);
+}
+
+function generateSampleData() {
+    const sampleData = `IP Address,Device Name,Location,Type
+192.168.1.1,Main Router,Server Room,router
+192.168.1.100,Web Server,Data Center,server
+192.168.1.101,Database Server,Data Center,server
+10.0.0.1,Firewall,Network Closet,firewall
+8.8.8.8,Google DNS,Internet,dns_server`;
+    
+    const blob = new Blob([sampleData], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'sample_devices.csv';
+    a.click();
+    window.URL.revokeObjectURL(url);
+}
+
+function proceedWithImport() {
+    document.getElementById('previewModal').querySelector('.btn-close').click();
+    document.getElementById('importForm').submit();
+}
+
+// File validation
+document.getElementById('fileInput').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+        if (file.size > 10 * 1024 * 1024) {
+            alert('File size must be less than 10MB');
+            this.value = '';
+            return;
+        }
+        
+        const allowedTypes = ['.xlsx', '.xls', '.csv', '.txt'];
+        const fileExtension = '.' + file.name.split('.').pop().toLowerCase();
+        
+        if (!allowedTypes.includes(fileExtension)) {
+            alert('Please select a valid file type (Excel, CSV, or Text)');
+            this.value = '';
+            return;
+        }
+    }
+});
+</script>
+{% endblock %}

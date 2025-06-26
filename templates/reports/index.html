@@ -1,0 +1,284 @@
+{% extends "base.html" %}
+
+{% block title %}Reports - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-file-earmark-text"></i> Network Reports</h4>
+    <button class="btn btn-sm btn-primary" onclick="generateReport()">
+        <i class="bi bi-plus-circle"></i> Generate Report
+    </button>
+</div>
+
+<!-- Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body text-center">
+                <div class="metric-value text-primary">{{ total_devices }}</div>
+                <div class="metric-label">Total Devices</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body text-center">
+                <div class="metric-value text-success">{{ total_pings_today }}</div>
+                <div class="metric-label">Pings Today</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body text-center">
+                <div class="metric-value text-warning">{{ total_alerts_today }}</div>
+                <div class="metric-label">Alerts Today</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-info">
+            <div class="card-body text-center">
+                <div class="metric-value text-info">95.2%</div>
+                <div class="metric-label">Avg Uptime</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Quick Reports -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-lightning"></i> Quick Reports</h6>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-activity"></i> Device Status Report</h6>
+                                <p class="text-muted small">Current status of all monitored devices</p>
+                                <a href="{% url 'reports:device_status' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View Report
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" onclick="exportReport('device_status')">
+                                    <i class="bi bi-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-graph-up"></i> Uptime Report</h6>
+                                <p class="text-muted small">Device uptime statistics and trends</p>
+                                <a href="{% url 'reports:uptime' %}" class="btn btn-sm btn-outline-primary">
+                                    <i class="bi bi-eye"></i> View Report
+                                </a>
+                                <button class="btn btn-sm btn-outline-success" onclick="exportReport('uptime')">
+                                    <i class="bi bi-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-speedometer2"></i> Performance Report</h6>
+                                <p class="text-muted small">Network performance and speed metrics</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="generateCustomReport('performance')">
+                                    <i class="bi bi-eye"></i> View Report
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="exportReport('performance')">
+                                    <i class="bi bi-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="col-md-6 mb-3">
+                        <div class="card border-0 bg-light">
+                            <div class="card-body">
+                                <h6><i class="bi bi-exclamation-triangle"></i> Alerts Report</h6>
+                                <p class="text-muted small">Alert history and incident analysis</p>
+                                <button class="btn btn-sm btn-outline-primary" onclick="generateCustomReport('alerts')">
+                                    <i class="bi bi-eye"></i> View Report
+                                </button>
+                                <button class="btn btn-sm btn-outline-success" onclick="exportReport('alerts')">
+                                    <i class="bi bi-download"></i> Export
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Custom Report Generator -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-gear"></i> Custom Report</h6>
+            </div>
+            <div class="card-body">
+                <form id="customReportForm">
+                    <div class="mb-3">
+                        <label class="form-label">Report Type</label>
+                        <select class="form-select form-select-sm" name="report_type">
+                            <option value="device_status">Device Status</option>
+                            <option value="uptime">Uptime Analysis</option>
+                            <option value="performance">Performance</option>
+                            <option value="alerts">Alerts</option>
+                            <option value="speed_test">Speed Tests</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Time Period</label>
+                        <select class="form-select form-select-sm" name="time_period">
+                            <option value="24h">Last 24 Hours</option>
+                            <option value="7d">Last 7 Days</option>
+                            <option value="30d">Last 30 Days</option>
+                            <option value="90d">Last 90 Days</option>
+                            <option value="custom">Custom Range</option>
+                        </select>
+                    </div>
+                    
+                    <div class="mb-3" id="customDateRange" style="display: none;">
+                        <label class="form-label">Start Date</label>
+                        <input type="date" class="form-control form-control-sm" name="start_date">
+                        <label class="form-label mt-2">End Date</label>
+                        <input type="date" class="form-control form-control-sm" name="end_date">
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Devices</label>
+                        <select class="form-select form-select-sm" name="devices" multiple>
+                            <option value="all" selected>All Devices</option>
+                            <!-- Device options would be populated here -->
+                        </select>
+                        <small class="text-muted">Hold Ctrl to select multiple</small>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label class="form-label">Format</label>
+                        <select class="form-select form-select-sm" name="format">
+                            <option value="html">HTML (View)</option>
+                            <option value="pdf">PDF Download</option>
+                            <option value="excel">Excel Download</option>
+                            <option value="csv">CSV Download</option>
+                        </select>
+                    </div>
+                    
+                    <div class="d-grid">
+                        <button type="submit" class="btn btn-primary btn-sm">
+                            <i class="bi bi-file-earmark-text"></i> Generate Report
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Recent Reports -->
+        <div class="card mt-3">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-clock-history"></i> Recent Reports</h6>
+            </div>
+            <div class="card-body">
+                <div class="list-group list-group-flush">
+                    <div class="list-group-item px-0 py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small><strong>Device Status</strong></small>
+                                <br><small class="text-muted">2 hours ago</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <div class="list-group-item px-0 py-2">
+                        <div class="d-flex justify-content-between align-items-center">
+                            <div>
+                                <small><strong>Uptime Report</strong></small>
+                                <br><small class="text-muted">1 day ago</small>
+                            </div>
+                            <button class="btn btn-sm btn-outline-primary">
+                                <i class="bi bi-download"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+document.querySelector('[name="time_period"]').addEventListener('change', function() {
+    const customRange = document.getElementById('customDateRange');
+    if (this.value === 'custom') {
+        customRange.style.display = 'block';
+    } else {
+        customRange.style.display = 'none';
+    }
+});
+
+document.getElementById('customReportForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData(this);
+    const params = new URLSearchParams(formData);
+    
+    const format = formData.get('format');
+    if (format === 'html') {
+        // Open in new tab for viewing
+        window.open(`/reports/custom/?${params.toString()}`, '_blank');
+    } else {
+        // Download file
+        window.location.href = `/reports/export/?${params.toString()}`;
+    }
+});
+
+function generateReport() {
+    const modal = document.createElement('div');
+    modal.innerHTML = `
+        <div class="modal fade" tabindex="-1">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Generate New Report</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Use the Custom Report form on the right to generate a new report with your specific requirements.</p>
+                        <p>You can also use the Quick Reports for common report types.</p>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+    document.body.appendChild(modal);
+    new bootstrap.Modal(modal.querySelector('.modal')).show();
+}
+
+function exportReport(type) {
+    window.open(`/reports/export/${type}/`, '_blank');
+}
+
+function generateCustomReport(type) {
+    document.querySelector('[name="report_type"]').value = type;
+    document.getElementById('customReportForm').dispatchEvent(new Event('submit'));
+}
+</script>
+{% endblock %}

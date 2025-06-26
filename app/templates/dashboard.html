@@ -1,0 +1,203 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Network Monitor Dashboard</h1>
+    <div class="text-muted">
+        <small id="last-update">Last updated: {{ moment().format('HH:mm:ss') }}</small>
+    </div>
+</div>
+
+<!-- Status Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body card-metric">
+                <div class="metric-value text-success" id="online-count">{{ status_summary.online }}</div>
+                <div class="metric-label">Online</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body card-metric">
+                <div class="metric-value text-danger" id="offline-count">{{ status_summary.offline }}</div>
+                <div class="metric-label">Offline</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body card-metric">
+                <div class="metric-value text-warning" id="warning-count">{{ status_summary.warning }}</div>
+                <div class="metric-label">Warning</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body card-metric">
+                <div class="metric-value text-primary" id="total-count">{{ status_summary.total }}</div>
+                <div class="metric-label">Total Devices</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Monitoring Chart -->
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-graph-up"></i> Ping Results (Last 24 Hours)</h5>
+            </div>
+            <div class="card-body">
+                <canvas id="pingChart" width="400" height="200"></canvas>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Alerts -->
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-exclamation-triangle"></i> Recent Alerts</h5>
+                <span class="badge bg-danger" id="alerts-count">{{ recent_alerts|length }}</span>
+            </div>
+            <div class="card-body">
+                {% if recent_alerts %}
+                    <div class="list-group list-group-flush">
+                        {% for alert in recent_alerts[:5] %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ alert.title }}</h6>
+                                    <p class="mb-1 text-muted small">{{ alert.device.name }} ({{ alert.device.ip_address }})</p>
+                                    <small class="text-muted">{{ alert.created_at.strftime('%Y-%m-%d %H:%M') }}</small>
+                                </div>
+                                <span class="badge bg-{{ 'danger' if alert.severity == 'high' else 'warning' if alert.severity == 'medium' else 'info' }}">
+                                    {{ alert.severity }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if recent_alerts|length > 5 %}
+                    <div class="text-center mt-2">
+                        <a href="{{ url_for('monitoring.alerts') }}" class="btn btn-sm btn-outline-primary">
+                            View All Alerts
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-check-circle display-4"></i>
+                        <p class="mt-2">No recent alerts</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{{ url_for('devices.add') }}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-plus-circle"></i> Add Device
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('devices.import_page') }}" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-upload"></i> Import Devices
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{{ url_for('reports.index') }}" class="btn btn-info w-100 mb-2">
+                            <i class="bi bi-file-earmark-text"></i> Generate Report
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-warning w-100 mb-2" onclick="testAllDevices()">
+                            <i class="bi bi-play-circle"></i> Test All Devices
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Initialize ping results chart
+const ctx = document.getElementById('pingChart').getContext('2d');
+const pingChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: {{ chart_data.labels | tojson }},
+        datasets: [{
+            label: 'Successful',
+            data: {{ chart_data.successful | tojson }},
+            borderColor: '#28a745',
+            backgroundColor: 'rgba(40, 167, 69, 0.1)',
+            tension: 0.4
+        }, {
+            label: 'Failed',
+            data: {{ chart_data.failed | tojson }},
+            borderColor: '#dc3545',
+            backgroundColor: 'rgba(220, 53, 69, 0.1)',
+            tension: 0.4
+        }]
+    },
+    options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+            y: {
+                beginAtZero: true
+            }
+        },
+        plugins: {
+            legend: {
+                position: 'top'
+            }
+        }
+    }
+});
+
+// Test all devices function
+function testAllDevices() {
+    if (confirm('This will queue monitoring tests for all active devices. Continue?')) {
+        fetch('/api/devices/test-all', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            }
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Monitoring tests queued for all devices!');
+            } else {
+                alert('Error: ' + data.error);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error testing devices');
+        });
+    }
+}
+</script>
+{% endblock %}

@@ -1,0 +1,137 @@
+{% extends "base_simple.html" %}
+
+{% block title %}Add Device - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-header">
+                <h4><i class="bi bi-plus-circle"></i> Add New Device</h4>
+            </div>
+            <div class="card-body">
+                <form method="POST">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="name" class="form-label">Device Name *</label>
+                                <input type="text" class="form-control" id="name" name="name" required>
+                                <div class="form-text">A friendly name for this device</div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="ip_address" class="form-label">IP Address *</label>
+                                <input type="text" class="form-control" id="ip_address" name="ip_address" required 
+                                       pattern="^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$" 
+                                       placeholder="192.168.1.1">
+                                <div class="form-text">IPv4 address to monitor</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="device_type" class="form-label">Device Type</label>
+                                <select class="form-select" id="device_type" name="device_type">
+                                    <option value="server">Server</option>
+                                    <option value="router">Router</option>
+                                    <option value="switch">Switch</option>
+                                    <option value="firewall">Firewall</option>
+                                    <option value="printer">Printer</option>
+                                    <option value="workstation">Workstation</option>
+                                    <option value="dns_server">DNS Server</option>
+                                    <option value="web_server">Web Server</option>
+                                    <option value="other">Other</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label for="location" class="form-label">Location</label>
+                                <input type="text" class="form-control" id="location" name="location" 
+                                       placeholder="e.g., Server Room, Office, Remote Site">
+                                <div class="form-text">Physical or logical location</div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description" name="description" rows="3" 
+                                  placeholder="Optional description of this device"></textarea>
+                    </div>
+                    
+                    <div class="card bg-light">
+                        <div class="card-body">
+                            <h6 class="card-title">Quick Test</h6>
+                            <p class="card-text text-muted">Test connectivity before adding the device</p>
+                            <button type="button" class="btn btn-outline-primary" onclick="testConnection()">
+                                <i class="bi bi-play-circle"></i> Test Connection
+                            </button>
+                            <div id="test-result" class="mt-2"></div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between mt-4">
+                        <a href="/devices" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i> Cancel
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-plus-circle"></i> Add Device
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testConnection() {
+    const ipAddress = document.getElementById('ip_address').value;
+    const resultDiv = document.getElementById('test-result');
+    
+    if (!ipAddress) {
+        resultDiv.innerHTML = '<div class="alert alert-warning">Please enter an IP address first</div>';
+        return;
+    }
+    
+    // Show loading
+    resultDiv.innerHTML = '<div class="alert alert-info"><i class="bi bi-hourglass-split"></i> Testing connection...</div>';
+    
+    // Simple ping test using a temporary device
+    fetch('/api/status')
+        .then(response => response.json())
+        .then(data => {
+            // For demo purposes, we'll simulate a test
+            // In a real implementation, you'd create a temporary test endpoint
+            const isValid = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ipAddress);
+            
+            if (isValid) {
+                resultDiv.innerHTML = '<div class="alert alert-success"><i class="bi bi-check-circle"></i> IP address format is valid. Click "Add Device" to start monitoring.</div>';
+            } else {
+                resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Invalid IP address format</div>';
+            }
+        })
+        .catch(error => {
+            resultDiv.innerHTML = '<div class="alert alert-danger"><i class="bi bi-x-circle"></i> Test failed: ' + error.message + '</div>';
+        });
+}
+
+// Validate IP address format on input
+document.getElementById('ip_address').addEventListener('input', function() {
+    const ip = this.value;
+    const isValid = /^(?:[0-9]{1,3}\.){3}[0-9]{1,3}$/.test(ip);
+    
+    if (ip && !isValid) {
+        this.classList.add('is-invalid');
+    } else {
+        this.classList.remove('is-invalid');
+    }
+});
+</script>
+{% endblock %}

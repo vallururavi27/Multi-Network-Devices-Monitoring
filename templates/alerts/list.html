@@ -1,0 +1,250 @@
+{% extends "base.html" %}
+
+{% block title %}Alerts - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-exclamation-triangle"></i> Network Alerts</h4>
+    <div class="btn-group" role="group">
+        <button class="btn btn-sm btn-outline-success" onclick="acknowledgeAll()">
+            <i class="bi bi-check-all"></i> Acknowledge All
+        </button>
+        <button class="btn btn-sm btn-outline-primary" onclick="refreshAlerts()">
+            <i class="bi bi-arrow-clockwise"></i> Refresh
+        </button>
+    </div>
+</div>
+
+<!-- Alert Filters -->
+<div class="card mb-3">
+    <div class="card-body">
+        <form method="get" class="row g-3">
+            <div class="col-md-3">
+                <select class="form-select form-select-sm" name="status">
+                    <option value="">All Alerts</option>
+                    <option value="active" {% if status_filter == 'active' %}selected{% endif %}>Active Only</option>
+                    <option value="resolved" {% if status_filter == 'resolved' %}selected{% endif %}>Resolved Only</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <select class="form-select form-select-sm" name="severity">
+                    <option value="">All Severities</option>
+                    <option value="high" {% if severity_filter == 'high' %}selected{% endif %}>High</option>
+                    <option value="medium" {% if severity_filter == 'medium' %}selected{% endif %}>Medium</option>
+                    <option value="low" {% if severity_filter == 'low' %}selected{% endif %}>Low</option>
+                </select>
+            </div>
+            <div class="col-md-3">
+                <input type="text" class="form-control form-control-sm" name="device" 
+                       placeholder="Filter by device..." value="{{ request.GET.device }}">
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary btn-sm w-100">
+                    <i class="bi bi-funnel"></i> Filter
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Alerts List -->
+{% if page_obj.object_list %}
+    <div class="card">
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-dark">
+                        <tr>
+                            <th style="width: 5%;"></th>
+                            <th style="width: 15%;">DEVICE</th>
+                            <th style="width: 25%;">ALERT</th>
+                            <th style="width: 10%;">SEVERITY</th>
+                            <th style="width: 10%;">TYPE</th>
+                            <th style="width: 15%;">TIME</th>
+                            <th style="width: 10%;">STATUS</th>
+                            <th style="width: 10%;">ACTIONS</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for alert in page_obj.object_list %}
+                        <tr class="alert-row {% if not alert.is_active %}table-secondary{% endif %}">
+                            <td>
+                                {% if alert.severity == 'high' %}
+                                    <i class="bi bi-exclamation-triangle-fill text-danger"></i>
+                                {% elif alert.severity == 'medium' %}
+                                    <i class="bi bi-exclamation-circle-fill text-warning"></i>
+                                {% else %}
+                                    <i class="bi bi-info-circle-fill text-info"></i>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ alert.device.name }}</strong>
+                                    <br><small class="text-muted">{{ alert.device.ip_address }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                <div>
+                                    <strong>{{ alert.title }}</strong>
+                                    {% if alert.message %}
+                                        <br><small class="text-muted">{{ alert.message|truncatechars:60 }}</small>
+                                    {% endif %}
+                                </div>
+                            </td>
+                            <td>
+                                <span class="badge bg-{% if alert.severity == 'high' %}danger{% elif alert.severity == 'medium' %}warning{% else %}info{% endif %}">
+                                    {{ alert.get_severity_display|upper }}
+                                </span>
+                            </td>
+                            <td>
+                                <span class="badge bg-secondary">{{ alert.get_alert_type_display }}</span>
+                            </td>
+                            <td>
+                                <div>
+                                    {{ alert.created_at|timesince }} ago
+                                    <br><small class="text-muted">{{ alert.created_at|date:"M d, H:i" }}</small>
+                                </div>
+                            </td>
+                            <td>
+                                {% if alert.is_active %}
+                                    {% if alert.is_acknowledged %}
+                                        <span class="badge bg-warning">Acknowledged</span>
+                                    {% else %}
+                                        <span class="badge bg-danger">Active</span>
+                                    {% endif %}
+                                {% else %}
+                                    <span class="badge bg-success">Resolved</span>
+                                {% endif %}
+                            </td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    {% if alert.is_active and not alert.is_acknowledged %}
+                                        <button class="btn btn-sm btn-outline-warning" 
+                                                onclick="acknowledgeAlert({{ alert.id }})" title="Acknowledge">
+                                            <i class="bi bi-check"></i>
+                                        </button>
+                                    {% endif %}
+                                    {% if alert.is_active %}
+                                        <button class="btn btn-sm btn-outline-success" 
+                                                onclick="resolveAlert({{ alert.id }})" title="Resolve">
+                                            <i class="bi bi-check-circle"></i>
+                                        </button>
+                                    {% endif %}
+                                    <button class="btn btn-sm btn-outline-primary" 
+                                            onclick="viewAlert({{ alert.id }})" title="View Details">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pagination -->
+    {% if page_obj.has_other_pages %}
+    <nav class="mt-3">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.previous_page_number }}">Previous</a>
+                </li>
+            {% endif %}
+            
+            {% for num in page_obj.paginator.page_range %}
+                {% if page_obj.number == num %}
+                    <li class="page-item active">
+                        <span class="page-link">{{ num }}</span>
+                    </li>
+                {% elif num > page_obj.number|add:'-3' and num < page_obj.number|add:'3' %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ num }}">{{ num }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            
+            {% if page_obj.has_next %}
+                <li class="page-item">
+                    <a class="page-link" href="?page={{ page_obj.next_page_number }}">Next</a>
+                </li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+{% else %}
+    <div class="card">
+        <div class="card-body text-center">
+            <i class="bi bi-check-circle display-1 text-success"></i>
+            <h3 class="mt-3">No Alerts</h3>
+            <p class="text-muted">All systems are running smoothly!</p>
+        </div>
+    </div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function acknowledgeAlert(alertId) {
+    fetch(`/alerts/${alertId}/acknowledge/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to acknowledge alert');
+        }
+    })
+    .catch(() => location.reload());
+}
+
+function resolveAlert(alertId) {
+    fetch(`/alerts/${alertId}/resolve/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success || response.ok) {
+            location.reload();
+        } else {
+            alert('Failed to resolve alert');
+        }
+    })
+    .catch(() => location.reload());
+}
+
+function viewAlert(alertId) {
+    // Simple alert details view
+    const row = document.querySelector(`tr:has(button[onclick*="${alertId}"])`);
+    if (row) {
+        const device = row.cells[1].textContent.trim();
+        const alert = row.cells[2].textContent.trim();
+        const severity = row.cells[3].textContent.trim();
+        const time = row.cells[5].textContent.trim();
+        
+        alert(`Alert Details:\n\nDevice: ${device}\nAlert: ${alert}\nSeverity: ${severity}\nTime: ${time}`);
+    }
+}
+
+function acknowledgeAll() {
+    if (confirm('Acknowledge all active alerts?')) {
+        // This would need a bulk acknowledge endpoint
+        alert('Bulk acknowledge functionality would be implemented here');
+    }
+}
+
+function refreshAlerts() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(refreshAlerts, 30000);
+</script>
+{% endblock %}

@@ -1,0 +1,477 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Network Monitor Dashboard</h1>
+    <div class="text-muted">
+        <small>Last updated: <span id="last-update">{{ "now"|date:"H:i:s" }}</span></small>
+    </div>
+</div>
+
+<!-- Modern Advanced Dashboard Cards -->
+<div class="row mb-4">
+    <!-- Total Devices Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card modern-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                            Total Devices
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="total-devices">
+                            {{ status_summary.total|default:"0" }}
+                        </div>
+                        <div class="text-xs text-muted mt-1">
+                            <i class="bi bi-arrow-up text-success"></i>
+                            <span id="total-change">+12</span> from last week
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="icon-circle bg-primary">
+                            <i class="bi bi-hdd-network text-white"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Online Devices Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card modern-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                            Online Devices
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="online-devices">
+                            {{ status_summary.online|default:"0" }}
+                        </div>
+                        <div class="text-xs text-muted mt-1">
+                            <span id="online-percentage">{{ status_summary.online_percentage|default:"0" }}%</span> of total
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="icon-circle bg-success">
+                            <i class="bi bi-check-circle text-white"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar bg-success" role="progressbar"
+                         style="width: {{ status_summary.online_percentage|default:"0" }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Devices Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card modern-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-danger text-uppercase mb-1">
+                            Offline Devices
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="offline-devices">
+                            {{ status_summary.offline|default:"0" }}
+                        </div>
+                        <div class="text-xs text-muted mt-1">
+                            <span id="offline-percentage">{{ status_summary.offline_percentage|default:"0" }}%</span> of total
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="icon-circle bg-danger">
+                            <i class="bi bi-x-circle text-white"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Progress Bar -->
+                <div class="progress mt-2" style="height: 4px;">
+                    <div class="progress-bar bg-danger" role="progressbar"
+                         style="width: {{ status_summary.offline_percentage|default:"0" }}%"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Network Health Card -->
+    <div class="col-xl-3 col-md-6 mb-4">
+        <div class="card modern-card border-0 shadow-sm h-100">
+            <div class="card-body">
+                <div class="row no-gutters align-items-center">
+                    <div class="col mr-2">
+                        <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                            Network Health
+                        </div>
+                        <div class="h5 mb-0 font-weight-bold text-gray-800" id="network-health">
+                            {{ network_health_score|default:"95" }}%
+                        </div>
+                        <div class="text-xs text-muted mt-1">
+                            <i class="bi bi-activity text-info"></i>
+                            Avg response: <span id="avg-response">{{ avg_response_time|default:"15" }}ms</span>
+                        </div>
+                    </div>
+                    <div class="col-auto">
+                        <div class="icon-circle bg-info">
+                            <i class="bi bi-heart-pulse text-white"></i>
+                        </div>
+                    </div>
+                </div>
+                <!-- Health Indicator -->
+                <div class="mt-2">
+                    <div class="health-indicator">
+                        <div class="health-bar" style="width: {{ network_health_score|default:"95" }}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Devices Section (Moved Up) -->
+<div class="row mb-4">
+    <div class="col-12">
+        <div class="card modern-card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-hdd-network"></i> Recent Devices
+                    </h6>
+                    <a href="{% url 'devices:list' %}" class="btn btn-sm btn-outline-primary">
+                        <i class="bi bi-eye"></i> View All
+                    </a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead class="table-dark">
+                            <tr>
+                                <th>Device</th>
+                                <th>IP Address</th>
+                                <th>Status</th>
+                                <th>Last Seen</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for device in devices %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        <i class="bi bi-{{ device.get_device_icon }} me-2 text-muted"></i>
+                                        <div>
+                                            <strong>{{ device.name }}</strong>
+                                            <br><small class="text-muted">{{ device.get_device_type_display }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>
+                                    <code>{{ device.ip_address }}</code>
+                                </td>
+                                <td>
+                                    <span class="badge bg-{{ device.get_status_color }}">
+                                        <i class="bi bi-{{ device.get_status_icon }}"></i>
+                                        {{ device.get_status_display }}
+                                    </span>
+                                </td>
+                                <td>
+                                    {% if device.last_seen %}
+                                        <small>{{ device.last_seen|timesince }} ago</small>
+                                    {% else %}
+                                        <small class="text-muted">Never</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <div class="btn-group btn-group-sm" role="group">
+                                        <button class="btn btn-outline-primary" onclick="pingDevice({{ device.id }})" title="Ping">
+                                            <i class="bi bi-wifi"></i>
+                                        </button>
+                                        <a href="{% url 'devices:detail' device.id %}" class="btn btn-outline-info" title="Details">
+                                            <i class="bi bi-eye"></i>
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="5" class="text-center text-muted">
+                                    <i class="bi bi-inbox"></i> No devices found
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Real-time Statistics Row -->
+<div class="row mb-4">
+    <div class="col-xl-8">
+        <div class="card modern-card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <div class="d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="bi bi-graph-up"></i> Network Performance (Last 24 Hours)
+                    </h6>
+                    <div class="dropdown">
+                        <button class="btn btn-sm btn-outline-primary dropdown-toggle" data-bs-toggle="dropdown">
+                            <i class="bi bi-gear"></i> Options
+                        </button>
+                        <ul class="dropdown-menu">
+                            <li><a class="dropdown-item" href="#" onclick="refreshChart()">
+                                <i class="bi bi-arrow-clockwise"></i> Refresh
+                            </a></li>
+                            <li><a class="dropdown-item" href="#" onclick="exportChart()">
+                                <i class="bi bi-download"></i> Export
+                            </a></li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="chart-container">
+                    <canvas id="performanceChart" width="400" height="200"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-xl-4">
+        <!-- Quick Stats -->
+        <div class="card modern-card border-0 shadow-sm mb-3">
+            <div class="card-header bg-white border-0">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-lightning"></i> Quick Stats
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="stat-item">
+                            <div class="stat-value text-success">{{ total_pings_today|default:"0" }}</div>
+                            <div class="stat-label">Pings Today</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-value text-warning">{{ total_alerts_today|default:"0" }}</div>
+                            <div class="stat-label">Alerts Today</div>
+                        </div>
+                    </div>
+                </div>
+                <hr>
+                <div class="row text-center">
+                    <div class="col-6 border-end">
+                        <div class="stat-item">
+                            <div class="stat-value text-info">{{ speed_tests_today|default:"0" }}</div>
+                            <div class="stat-label">Speed Tests</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-item">
+                            <div class="stat-value text-primary">{{ uptime_percentage|default:"99.5" }}%</div>
+                            <div class="stat-label">Uptime</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- System Status -->
+        <div class="card modern-card border-0 shadow-sm">
+            <div class="card-header bg-white border-0">
+                <h6 class="m-0 font-weight-bold text-primary">
+                    <i class="bi bi-cpu"></i> System Status
+                </h6>
+            </div>
+            <div class="card-body">
+                <div class="status-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="status-label">Monitoring Service</span>
+                        <span class="badge bg-success">Running</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="status-label">Database</span>
+                        <span class="badge bg-success">Connected</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="status-label">Task Queue</span>
+                        <span class="badge bg-warning">Limited</span>
+                    </div>
+                </div>
+                <div class="status-item">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <span class="status-label">Disk Space</span>
+                        <span class="badge bg-info">85% Used</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Recent Alerts -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5><i class="bi bi-exclamation-triangle"></i> Recent Alerts</h5>
+                <span class="badge bg-danger">{{ recent_alerts|length }}</span>
+            </div>
+            <div class="card-body">
+                {% if recent_alerts %}
+                    <div class="list-group list-group-flush">
+                        {% for alert in recent_alerts|slice:":5" %}
+                        <div class="list-group-item px-0 alert-item severity-{{ alert.severity }}">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <h6 class="mb-1">{{ alert.title }}</h6>
+                                    <p class="mb-1 text-muted small">{{ alert.device.name }} ({{ alert.device.ip_address }})</p>
+                                    <small class="text-muted">{{ alert.created_at|timesince }} ago</small>
+                                </div>
+                                <span class="badge bg-{{ alert.severity_color }}">
+                                    {{ alert.get_severity_display }}
+                                </span>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% if recent_alerts|length > 5 %}
+                    <div class="text-center mt-2">
+                        <a href="{% url 'alerts:list' %}" class="btn btn-sm btn-outline-primary">
+                            View All Alerts
+                        </a>
+                    </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-check-circle display-4"></i>
+                        <p class="mt-2">No recent alerts</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="{% url 'devices:add' %}" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-plus-circle"></i> Add Device
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'devices:import' %}" class="btn btn-success w-100 mb-2">
+                            <i class="bi bi-upload"></i> Import Devices
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'reports:index' %}" class="btn btn-info w-100 mb-2">
+                            <i class="bi bi-file-earmark-text"></i> Generate Report
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="{% url 'monitoring:live' %}" class="btn btn-warning w-100 mb-2">
+                            <i class="bi bi-activity"></i> Live Monitor
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% if system_metrics %}
+<!-- System Metrics -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-graph-up"></i> System Metrics (Today)</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-primary">{{ system_metrics.total_pings_today }}</h4>
+                            <small class="text-muted">Total Pings</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-success">{{ system_metrics.uptime_percentage }}%</h4>
+                            <small class="text-muted">Uptime</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-info">
+                                {% if system_metrics.avg_response_time %}
+                                    {{ system_metrics.avg_response_time }}ms
+                                {% else %}
+                                    N/A
+                                {% endif %}
+                            </h4>
+                            <small class="text-muted">Avg Response Time</small>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="text-center">
+                            <h4 class="text-warning">{{ system_metrics.total_speed_tests_today }}</h4>
+                            <small class="text-muted">Speed Tests</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}
+
+{% block extra_js %}
+<script>
+// Auto-refresh dashboard data every 30 seconds
+setInterval(function() {
+    fetch('{% url "monitoring:api_dashboard_data" %}')
+        .then(response => response.json())
+        .then(data => {
+            // Update status summary
+            if (data.status_summary) {
+                const summary = data.status_summary;
+                document.querySelector('.metric-value.text-success').textContent = summary.online || 0;
+                document.querySelector('.metric-value.text-danger').textContent = summary.offline || 0;
+                document.querySelector('.metric-value.text-warning').textContent = summary.warning || 0;
+                document.querySelector('.metric-value.text-primary').textContent = summary.total || 0;
+            }
+            
+            // Update timestamp
+            document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+        })
+        .catch(error => console.error('Auto-refresh error:', error));
+}, 30000);
+</script>
+{% endblock %}

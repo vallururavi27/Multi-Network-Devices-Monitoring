@@ -1,0 +1,218 @@
+{% extends "base_simple.html" %}
+
+{% block title %}Dashboard - Network Monitor{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1><i class="bi bi-speedometer2"></i> Network Monitor Dashboard</h1>
+    <div class="text-muted">
+        <small>Last updated: <span id="last-update">{{ moment().format('HH:mm:ss') }}</span></small>
+    </div>
+</div>
+
+<!-- Status Summary Cards -->
+<div class="row mb-4">
+    <div class="col-md-3">
+        <div class="card border-success">
+            <div class="card-body card-metric">
+                <div class="metric-value text-success">{{ status_summary.online }}</div>
+                <div class="metric-label">Online</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-danger">
+            <div class="card-body card-metric">
+                <div class="metric-value text-danger">{{ status_summary.offline }}</div>
+                <div class="metric-label">Offline</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-warning">
+            <div class="card-body card-metric">
+                <div class="metric-value text-warning">{{ status_summary.warning }}</div>
+                <div class="metric-label">Warning</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-3">
+        <div class="card border-primary">
+            <div class="card-body card-metric">
+                <div class="metric-value text-primary">{{ status_summary.total }}</div>
+                <div class="metric-label">Total Devices</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Device Status -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-hdd-network"></i> Device Status</h5>
+            </div>
+            <div class="card-body">
+                {% if devices %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Device</th>
+                                    <th>IP Address</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for device in devices %}
+                                <tr>
+                                    <td>{{ device.name }}</td>
+                                    <td>{{ device.ip_address }}</td>
+                                    <td>
+                                        <span class="status-{{ device.status.value if device.status else 'unknown' }}">
+                                            <i class="bi bi-circle-fill"></i>
+                                            {{ device.status.value.title() if device.status else 'Unknown' }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <button class="btn btn-sm btn-outline-primary" onclick="testDevice({{ device.id }})">
+                                            <i class="bi bi-play-circle"></i> Test
+                                        </button>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-hdd-network display-4"></i>
+                        <p class="mt-2">No devices configured</p>
+                        <a href="/add_device" class="btn btn-primary">Add Your First Device</a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    
+    <!-- Recent Ping Results -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-activity"></i> Recent Ping Results</h5>
+            </div>
+            <div class="card-body">
+                {% if recent_pings %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Device</th>
+                                    <th>Status</th>
+                                    <th>Response Time</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ping in recent_pings[:10] %}
+                                <tr>
+                                    <td>{{ ping.device.name }}</td>
+                                    <td>
+                                        {% if ping.is_reachable %}
+                                            <span class="text-success"><i class="bi bi-check-circle"></i> Online</span>
+                                        {% else %}
+                                            <span class="text-danger"><i class="bi bi-x-circle"></i> Offline</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if ping.response_time %}
+                                            {{ "%.1f"|format(ping.response_time) }}ms
+                                        {% else %}
+                                            -
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ ping.timestamp.strftime('%H:%M:%S') }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted">
+                        <i class="bi bi-activity display-4"></i>
+                        <p class="mt-2">No ping results yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="row mt-4">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="bi bi-lightning"></i> Quick Actions</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-3">
+                        <a href="/add_device" class="btn btn-primary w-100 mb-2">
+                            <i class="bi bi-plus-circle"></i> Add Device
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/devices" class="btn btn-info w-100 mb-2">
+                            <i class="bi bi-list"></i> View All Devices
+                        </a>
+                    </div>
+                    <div class="col-md-3">
+                        <button class="btn btn-success w-100 mb-2" onclick="refreshPage()">
+                            <i class="bi bi-arrow-clockwise"></i> Refresh Status
+                        </button>
+                    </div>
+                    <div class="col-md-3">
+                        <a href="/health" class="btn btn-warning w-100 mb-2" target="_blank">
+                            <i class="bi bi-heart-pulse"></i> System Health
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testDevice(deviceId) {
+    fetch(`/test_device/${deviceId}`)
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                const status = data.is_reachable ? 'Online' : 'Offline';
+                const responseTime = data.response_time ? ` (${data.response_time.toFixed(1)}ms)` : '';
+                alert(`${data.device_name}: ${status}${responseTime}`);
+            } else {
+                alert(`Test failed: ${data.error}`);
+            }
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Error testing device');
+        });
+}
+
+function refreshPage() {
+    location.reload();
+}
+
+// Auto-refresh every 30 seconds
+setInterval(function() {
+    document.getElementById('last-update').textContent = new Date().toLocaleTimeString();
+}, 30000);
+</script>
+{% endblock %}

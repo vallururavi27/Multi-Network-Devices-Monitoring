@@ -1,0 +1,21 @@
+IP Address,Host Name,Location,ISP
+8.8.8.8,Google DNS Primary,Hyderabad,google
+8.8.4.4,Google DNS Secondary,Vishakapatnam,Airtel
+1.1.1.1,Cloudflare DNS Primary,Vijayawada,sla
+1.0.0.1,Cloudflare DNS Secondary,Vijayawada,asdas
+9.9.9.9,Quad9 DNS Primary,Vijayawada,sdasd
+149.112.112.112,Quad9 DNS Secondary,Vijayawada,dasd
+142.250.191.14,Google.com,Vijayawada,sd
+192.168.1.1,Home Router,Home Network,Local ISP
+192.168.1.100,Web Server,Data Center,Local ISP
+192.168.1.101,Database Server,Data Center,Local ISP
+192.168.1.102,File Server,Data Center,Local ISP
+10.0.0.1,Firewall,Network Closet,Corporate ISP
+10.0.0.10,Core Switch,Network Closet,Corporate ISP
+172.16.1.1,DMZ Router,DMZ Zone,Corporate ISP
+203.122.58.1,ISP Gateway,External,Airtel
+203.122.58.2,ISP DNS,External,Airtel
+115.96.208.1,BSNL Gateway,External,BSNL
+115.96.208.2,BSNL DNS,External,BSNL
+157.240.13.35,Facebook Server,External,Meta
+31.13.64.1,Instagram Server,External,Meta

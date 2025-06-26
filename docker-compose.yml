@@ -1,0 +1,57 @@
+version: '3.8'
+
+services:
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  web:
+    build: .
+    ports:
+      - "5000:5000"
+    environment:
+      - FLASK_ENV=production
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite:///network_monitor.db
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - redis
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:5000/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+
+  worker:
+    build: .
+    command: celery -A app.celery worker --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite:///network_monitor.db
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - redis
+
+  beat:
+    build: .
+    command: celery -A app.celery beat --loglevel=info
+    environment:
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite:///network_monitor.db
+    volumes:
+      - ./data:/app/data
+    depends_on:
+      - redis
+
+volumes:
+  redis_data:

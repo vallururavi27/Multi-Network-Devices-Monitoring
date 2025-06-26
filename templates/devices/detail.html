@@ -1,0 +1,251 @@
+{% extends "base.html" %}
+
+{% block title %}{{ device.name }} - Device Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h4><i class="bi bi-hdd-network"></i> {{ device.name }}</h4>
+    <div>
+        <a href="{% url 'devices:edit' device.pk %}" class="btn btn-sm btn-outline-primary">
+            <i class="bi bi-pencil"></i> Edit
+        </a>
+        <a href="{% url 'devices:list' %}" class="btn btn-sm btn-secondary">
+            <i class="bi bi-arrow-left"></i> Back
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <!-- Device Info -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-info-circle"></i> Device Information</h6>
+            </div>
+            <div class="card-body">
+                <table class="table table-sm">
+                    <tr><td><strong>Name:</strong></td><td>{{ device.name }}</td></tr>
+                    <tr><td><strong>IP Address:</strong></td><td><code>{{ device.ip_address }}</code></td></tr>
+                    <tr><td><strong>Hostname:</strong></td><td>{{ device.hostname|default:"-" }}</td></tr>
+                    <tr><td><strong>Type:</strong></td><td>{{ device.get_device_type_display }}</td></tr>
+                    <tr><td><strong>Location:</strong></td><td>{{ device.location|default:"-" }}</td></tr>
+                    <tr><td><strong>City:</strong></td><td>{{ device.city|default:"-" }}</td></tr>
+                    <tr><td><strong>Country:</strong></td><td>{{ device.country|default:"-" }}</td></tr>
+                    <tr><td><strong>ISP:</strong></td><td>{{ device.isp|default:"-" }}</td></tr>
+                    <tr><td><strong>Status:</strong></td><td>
+                        <span class="badge bg-{{ device.status_color }}">{{ device.get_status_display }}</span>
+                    </td></tr>
+                    <tr><td><strong>Last Seen:</strong></td><td>
+                        {% if device.last_seen %}{{ device.last_seen|timesince }} ago{% else %}Never{% endif %}
+                    </td></tr>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Current Metrics -->
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-speedometer"></i> Current Metrics</h6>
+            </div>
+            <div class="card-body">
+                <div class="row text-center">
+                    <div class="col-4">
+                        <div class="metric-box">
+                            <div class="metric-value text-primary">
+                                {% if device.current_latency %}{{ device.current_latency|floatformat:1 }}ms{% else %}-{% endif %}
+                            </div>
+                            <div class="metric-label">Latency</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="metric-box">
+                            <div class="metric-value text-success">
+                                {% if device.current_download_speed %}{{ device.current_download_speed|floatformat:1 }}{% else %}-{% endif %}
+                            </div>
+                            <div class="metric-label">Download</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="metric-box">
+                            <div class="metric-value text-info">
+                                {% if device.current_upload_speed %}{{ device.current_upload_speed|floatformat:1 }}{% else %}-{% endif %}
+                            </div>
+                            <div class="metric-label">Upload</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Actions -->
+<div class="row mt-3">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-tools"></i> Device Actions</h6>
+            </div>
+            <div class="card-body">
+                <div class="btn-group" role="group">
+                    <button class="btn btn-outline-primary" onclick="testDevice({{ device.pk }})">
+                        <i class="bi bi-play-circle"></i> Ping Test
+                    </button>
+                    <button class="btn btn-outline-success" onclick="runSpeedTest({{ device.pk }})">
+                        <i class="bi bi-speedometer2"></i> Speed Test
+                    </button>
+                    <button class="btn btn-outline-warning" onclick="runTraceroute({{ device.pk }})">
+                        <i class="bi bi-diagram-3"></i> Traceroute
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Recent Results -->
+<div class="row mt-3">
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-activity"></i> Recent Ping Results</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_pings %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Status</th>
+                                    <th>Response</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for ping in recent_pings|slice:":10" %}
+                                <tr>
+                                    <td>{{ ping.timestamp|timesince }} ago</td>
+                                    <td>
+                                        <span class="badge bg-{{ ping.status_color }}">
+                                            {% if ping.is_reachable %}OK{% else %}FAIL{% endif %}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        {% if ping.response_time %}{{ ping.response_time|floatformat:1 }}ms{% else %}-{% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No ping results available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+    <div class="col-md-6">
+        <div class="card">
+            <div class="card-header">
+                <h6 class="mb-0"><i class="bi bi-speedometer2"></i> Recent Speed Tests</h6>
+            </div>
+            <div class="card-body">
+                {% if recent_speeds %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>Time</th>
+                                    <th>Download</th>
+                                    <th>Upload</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for speed in recent_speeds|slice:":5" %}
+                                <tr>
+                                    <td>{{ speed.timestamp|timesince }} ago</td>
+                                    <td>{{ speed.download_speed_formatted }}</td>
+                                    <td>{{ speed.upload_speed_formatted }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <p class="text-muted">No speed test results available</p>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+function testDevice(deviceId) {
+    fetch(`/api/test/${deviceId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Ping test started');
+            setTimeout(() => location.reload(), 3000);
+        } else {
+            alert('Test failed: ' + data.error);
+        }
+    });
+}
+
+function runSpeedTest(deviceId) {
+    fetch(`/api/speed-test/${deviceId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            alert('Speed test started (may take a few minutes)');
+        } else {
+            alert('Speed test failed: ' + data.error);
+        }
+    });
+}
+
+function runTraceroute(deviceId) {
+    fetch(`/api/traceroute/${deviceId}/`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': '{{ csrf_token }}' }
+    })
+    .then(response => response.json())
+    .then(data => {
+        if (data.success) {
+            const modal = document.createElement('div');
+            modal.innerHTML = `
+                <div class="modal fade" tabindex="-1">
+                    <div class="modal-dialog modal-lg">
+                        <div class="modal-content">
+                            <div class="modal-header">
+                                <h5 class="modal-title">Traceroute Results</h5>
+                                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                            </div>
+                            <div class="modal-body">
+                                <pre class="bg-dark text-light p-3">${data.result.output}</pre>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+            document.body.appendChild(modal);
+            new bootstrap.Modal(modal.querySelector('.modal')).show();
+        } else {
+            alert('Traceroute failed: ' + data.error);
+        }
+    });
+}
+</script>
+{% endblock %}
