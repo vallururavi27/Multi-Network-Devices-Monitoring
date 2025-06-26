@@ -9,15 +9,11 @@ A comprehensive, enterprise-grade network monitoring solution built with Django 
 This project is **completely free and open source**. If you find it useful, please consider supporting its development:
 
 [![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor-pink?logo=github)](https://github.com/sponsors/vallururavi27)
-[![PayPal Donate](https://img.shields.io/badge/PayPal-Donate-blue?logo=paypal)](https://paypal.me/vallururavi27)
-[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-orange?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/vallururavi27)
 [![GitHub Stars](https://img.shields.io/github/stars/vallururavi27/Multi-Network-Devices-Monitoring?style=social)](https://github.com/vallururavi27/Multi-Network-Devices-Monitoring)
 
 ### 🎯 Ways to Support
 
 - 💖 **[Become a GitHub Sponsor](https://github.com/sponsors/vallururavi27)** - Monthly recurring support
-- 💰 **[One-time PayPal Donation](https://paypal.me/vallururavi27)** - Quick and easy
-- ☕ **[Buy Me a Coffee](https://www.buymeacoffee.com/vallururavi27)** - Small appreciation
 - ⭐ **Star this repository** on GitHub - Free but valuable!
 - 🐛 **Report bugs** and suggest features
 - 🤝 **Contribute** code improvements

@@ -47,4 +47,4 @@ If applicable, paste any error logs here:
 
 ---
 
-💝 **Support this project**: If you find this tool useful, please consider [becoming a sponsor](https://github.com/sponsors/vallururavi27) or [making a donation](https://paypal.me/vallururavi27). Your support helps maintain and improve this project!
+💝 **Support this project**: If you find this tool useful, please consider [becoming a sponsor](https://github.com/sponsors/vallururavi27) or [starring the repository](https://github.com/vallururavi27/Multi-Network-Devices-Monitoring). Your support helps maintain and improve this project!
