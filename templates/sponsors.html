@@ -1,0 +1,327 @@
+{% extends "base.html" %}
+
+{% block title %}Support This Project - Network Monitor{% endblock %}
+
+{% block extra_css %}
+<style>
+.sponsor-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.sponsor-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 5px 20px rgba(0,0,0,0.2);
+}
+
+.sponsor-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.benefit-item {
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #eee;
+}
+
+.benefit-item:last-child {
+    border-bottom: none;
+}
+
+.hero-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 4rem 0;
+    margin-bottom: 3rem;
+}
+
+.stats-card {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    backdrop-filter: blur(10px);
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Hero Section -->
+<div class="hero-section">
+    <div class="container text-center">
+        <h1 class="display-4 mb-4">
+            <i class="bi bi-heart-fill text-danger"></i>
+            Support Network Monitor
+        </h1>
+        <p class="lead mb-4">
+            Help keep this free and open source network monitoring tool alive and growing!
+        </p>
+        <div class="row justify-content-center">
+            <div class="col-md-3">
+                <div class="stats-card card text-center p-3">
+                    <h3 class="mb-1">1000+</h3>
+                    <small>Devices Supported</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card card text-center p-3">
+                    <h3 class="mb-1">Free</h3>
+                    <small>Always & Forever</small>
+                </div>
+            </div>
+            <div class="col-md-3">
+                <div class="stats-card card text-center p-3">
+                    <h3 class="mb-1">Open Source</h3>
+                    <small>MIT Licensed</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container">
+    <!-- Sponsorship Options -->
+    <div class="row mb-5">
+        <div class="col-12 text-center mb-4">
+            <h2>Choose Your Support Method</h2>
+            <p class="text-muted">Every contribution, no matter the size, makes a difference!</p>
+        </div>
+        
+        <!-- GitHub Sponsors -->
+        <div class="col-md-6 mb-4">
+            <div class="sponsor-card card h-100">
+                <div class="card-body text-center">
+                    <div class="sponsor-icon text-success">
+                        <i class="bi bi-github"></i>
+                    </div>
+                    <h4>GitHub Sponsors</h4>
+                    <p class="text-muted">Monthly recurring support with exclusive benefits</p>
+                    
+                    <div class="mb-4">
+                        <h6>Sponsor Tiers:</h6>
+                        <div class="list-group list-group-flush">
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>☕ Coffee Supporter</span>
+                                <strong>$5/month</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>🚀 Feature Supporter</span>
+                                <strong>$15/month</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>💎 Premium Supporter</span>
+                                <strong>$50/month</strong>
+                            </div>
+                            <div class="list-group-item d-flex justify-content-between">
+                                <span>🏢 Enterprise Supporter</span>
+                                <strong>$100/month</strong>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <a href="https://github.com/sponsors/vallururavi27" 
+                       class="btn btn-success btn-lg" target="_blank">
+                        <i class="bi bi-github"></i> Become a Sponsor
+                    </a>
+                </div>
+            </div>
+        </div>
+        
+        <!-- One-time Donations -->
+        <div class="col-md-6 mb-4">
+            <div class="sponsor-card card h-100">
+                <div class="card-body text-center">
+                    <div class="sponsor-icon text-primary">
+                        <i class="bi bi-gift"></i>
+                    </div>
+                    <h4>One-time Donations</h4>
+                    <p class="text-muted">Quick and easy one-time contributions</p>
+                    
+                    <div class="mb-4">
+                        <h6>Donation Options:</h6>
+                        <div class="d-grid gap-2">
+                            <a href="https://paypal.me/vallururavi27" 
+                               class="btn btn-primary" target="_blank">
+                                <i class="bi bi-paypal"></i> PayPal Donation
+                            </a>
+                            <a href="https://www.buymeacoffee.com/vallururavi27" 
+                               class="btn btn-warning" target="_blank">
+                                <i class="bi bi-cup-hot"></i> Buy Me a Coffee
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <div class="text-muted">
+                        <small>
+                            <strong>Suggested amounts:</strong><br>
+                            $5 - Coffee ☕<br>
+                            $15 - Lunch 🍕<br>
+                            $50 - Dinner 🍽️<br>
+                            $100+ - You're awesome! 🎉
+                        </small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Sponsor Benefits -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h3 class="text-center mb-4">Sponsor Benefits</h3>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-star"></i> All Sponsors Get</h5>
+                </div>
+                <div class="card-body">
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Sponsor badge on your GitHub profile
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Recognition in project documentation
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Priority support for issues
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Early access to new features
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-gem"></i> Premium Sponsors Get</h5>
+                </div>
+                <div class="card-body">
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Direct email access to developer
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Feature request voting rights
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Custom feature development consideration
+                    </div>
+                    <div class="benefit-item">
+                        <i class="bi bi-check-circle text-success me-2"></i>
+                        Logo placement in README (Enterprise tier)
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- How Funds Are Used -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h5><i class="bi bi-pie-chart"></i> How Your Support Helps</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-primary" style="font-size: 2rem;">
+                                <i class="bi bi-tools"></i>
+                            </div>
+                            <h6>Development</h6>
+                            <p class="small text-muted">New features, bug fixes, and improvements</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-success" style="font-size: 2rem;">
+                                <i class="bi bi-server"></i>
+                            </div>
+                            <h6>Infrastructure</h6>
+                            <p class="small text-muted">Hosting, testing servers, and CI/CD</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-warning" style="font-size: 2rem;">
+                                <i class="bi bi-book"></i>
+                            </div>
+                            <h6>Documentation</h6>
+                            <p class="small text-muted">Better guides, tutorials, and examples</p>
+                        </div>
+                        <div class="col-md-3 text-center mb-3">
+                            <div class="text-info" style="font-size: 2rem;">
+                                <i class="bi bi-people"></i>
+                            </div>
+                            <h6>Community</h6>
+                            <p class="small text-muted">Support, forums, and user assistance</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Alternative Support -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <div class="card border-info">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="bi bi-lightbulb"></i> Other Ways to Support</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="bi bi-star text-warning" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Star the Repository</h6>
+                            <p class="small text-muted">Free but very valuable for project visibility</p>
+                            <a href="https://github.com/vallururavi27/Multi-Network-Devices-Monitoring" 
+                               class="btn btn-outline-warning btn-sm" target="_blank">
+                                <i class="bi bi-star"></i> Star Now
+                            </a>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="bi bi-share text-primary" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Share the Project</h6>
+                            <p class="small text-muted">Tell others about this tool</p>
+                            <div class="btn-group-sm">
+                                <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20awesome%20network%20monitoring%20tool!&url=https://github.com/vallururavi27/Multi-Network-Devices-Monitoring" 
+                                   class="btn btn-outline-primary btn-sm" target="_blank">
+                                    <i class="bi bi-twitter"></i>
+                                </a>
+                                <a href="https://www.linkedin.com/sharing/share-offsite/?url=https://github.com/vallururavi27/Multi-Network-Devices-Monitoring" 
+                                   class="btn btn-outline-primary btn-sm" target="_blank">
+                                    <i class="bi bi-linkedin"></i>
+                                </a>
+                            </div>
+                        </div>
+                        <div class="col-md-4 text-center mb-3">
+                            <i class="bi bi-code-slash text-success" style="font-size: 2rem;"></i>
+                            <h6 class="mt-2">Contribute Code</h6>
+                            <p class="small text-muted">Submit pull requests and improvements</p>
+                            <a href="https://github.com/vallururavi27/Multi-Network-Devices-Monitoring/blob/main/CONTRIBUTING.md" 
+                               class="btn btn-outline-success btn-sm" target="_blank">
+                                <i class="bi bi-code"></i> Contribute
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Thank You -->
+    <div class="text-center mb-5">
+        <h3>Thank You! 🙏</h3>
+        <p class="lead text-muted">
+            Your support makes this project possible and helps thousands of users worldwide.
+        </p>
+        <p class="text-muted">
+            Every contribution, whether financial or through code, documentation, or sharing, 
+            helps make this tool better for everyone.
+        </p>
+    </div>
+</div>
+{% endblock %}

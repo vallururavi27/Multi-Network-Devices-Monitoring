@@ -6,6 +6,12 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 from django.views.generic import RedirectView
+from django.shortcuts import render
+
+
+def sponsors_view(request):
+    """Sponsors and donation page"""
+    return render(request, 'sponsors.html')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
@@ -15,6 +21,7 @@ urlpatterns = [
     path('alerts/', include('alerts.urls')),
     path('reports/', include('reports.urls')),
     path('api/', include('monitoring.api_urls')),
+    path('sponsors/', sponsors_view, name='sponsors'),
 ]
 
 # Serve media files in development

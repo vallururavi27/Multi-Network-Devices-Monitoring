@@ -8,16 +8,39 @@ A comprehensive, enterprise-grade network monitoring solution built with Django 
 
 This project is **completely free and open source**. If you find it useful, please consider supporting its development:
 
-[![GitHub Stars](https://img.shields.io/github/stars/vallururavi27/Multi-Network-Devices-Monitoring?style=social)](https://github.com/vallururavi27/Multi-Network-Devices-Monitoring)
+[![GitHub Sponsors](https://img.shields.io/badge/GitHub-Sponsor-pink?logo=github)](https://github.com/sponsors/vallururavi27)
 [![PayPal Donate](https://img.shields.io/badge/PayPal-Donate-blue?logo=paypal)](https://paypal.me/vallururavi27)
+[![Buy Me A Coffee](https://img.shields.io/badge/Buy%20Me%20A%20Coffee-Support-orange?logo=buy-me-a-coffee)](https://www.buymeacoffee.com/vallururavi27)
+[![GitHub Stars](https://img.shields.io/github/stars/vallururavi27/Multi-Network-Devices-Monitoring?style=social)](https://github.com/vallururavi27/Multi-Network-Devices-Monitoring)
 
-- ⭐ **Star this repository** on GitHub
-- 💰 **[Donate via PayPal](https://paypal.me/vallururavi27)** to support development
+### 🎯 Ways to Support
+
+- 💖 **[Become a GitHub Sponsor](https://github.com/sponsors/vallururavi27)** - Monthly recurring support
+- 💰 **[One-time PayPal Donation](https://paypal.me/vallururavi27)** - Quick and easy
+- ☕ **[Buy Me a Coffee](https://www.buymeacoffee.com/vallururavi27)** - Small appreciation
+- ⭐ **Star this repository** on GitHub - Free but valuable!
 - 🐛 **Report bugs** and suggest features
 - 🤝 **Contribute** code improvements
 - 📢 **Share** with others who might find it useful
 
+### 💡 Why Support?
+
+- 🔧 **Maintenance**: Keep the project updated and bug-free
+- 🚀 **New Features**: Add requested features and improvements
+- 📚 **Documentation**: Better guides and tutorials
+- 🌍 **Community**: Support for users and contributors
+- ⚡ **Performance**: Optimize for larger deployments
+
 Your support helps maintain and improve this tool for everyone! 🙏
+
+### 🏆 Sponsor Benefits
+
+GitHub Sponsors get:
+- 🎖️ **Sponsor badge** on your GitHub profile
+- 📧 **Direct access** for priority support
+- 🗳️ **Feature voting** on upcoming improvements
+- 📝 **Early access** to new releases
+- 🙏 **Recognition** in project documentation
 
 ## ✨ Features
 
